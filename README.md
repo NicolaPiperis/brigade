@@ -11,6 +11,6 @@ Inspired by [Matt Pocock's skills](https://github.com/mattpocock/skills).
 ## Install
 
 ```
-/plugin marketplace add <path-or-repo-of-brigade>
+/plugin marketplace add NicolaPiperis/brigade
 /plugin install mise-en-place@brigade
 ```

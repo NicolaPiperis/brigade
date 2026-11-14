@@ -57,11 +57,3 @@ Read by walking down the `map.md` files and opening only what bears on the work.
 
 - `vocabulary/`: the allowed names
 - `templates/`: the shape of each document, its sections and its metadata
-- `schemas/`: the rules for the metadata
-- `tooling/`: the validator
-
-Whatever enters the pantry passes the validator, which checks sections against the templates, metadata against the schemas, names against the vocabularies, and where each file sits:
-
-```
-python config/tooling/validate_pantry.py
-```

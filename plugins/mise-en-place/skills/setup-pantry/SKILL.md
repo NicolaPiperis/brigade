@@ -21,7 +21,7 @@ This skill writes the pantry and the pointer. It is prompt-driven: explore, pres
 
 Read the pointer.
 
-- **It names a folder holding a `pantry.yaml`**: the user already has a pantry. Tell them where it is and stop. If they asked you to verify it, compare it with [seed/](seed/), run `python config/tooling/validate_pantry.py` from the pantry root, and report both results, writing nothing. If they want to switch to another pantry, go on to step 2.
+- **It names a folder holding a `pantry.yaml`**: the user already has a pantry. Tell them where it is and stop. If they asked you to verify it, compare it with [seed/](seed/) and report what differs, writing nothing. If they want to switch to another pantry, go on to step 2.
 - **It names a folder without a `pantry.yaml`, or a folder that is gone**: tell the user, then go on to step 2.
 - **There is no pointer**: go on to step 2.
 
