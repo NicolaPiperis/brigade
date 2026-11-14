@@ -1,0 +1,15 @@
+{
+  "name": "brigade",
+  "owner": {
+    "name": "Nicola Piperis"
+  },
+  "description": "Nicola Piperis's Claude Code plugins, run like a professional kitchen brigade.",
+  "version": "0.1.0",
+  "plugins": [
+    {
+      "name": "mise-en-place",
+      "source": "./plugins/mise-en-place",
+      "description": "A guided, human-in-the-loop development workflow backed by a personal knowledge base, the pantry: every ticket from the grill to the bill."
+    }
+  ]
+}

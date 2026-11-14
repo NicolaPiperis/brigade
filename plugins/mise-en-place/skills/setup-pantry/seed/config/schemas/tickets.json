@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pantry/config/schemas/tickets.json",
+  "title": "Ticket metadata",
+  "description": "meta.yaml of a ticket in core/tickets/pending/{product}/{code}/ or core/tickets/served/{product}/{code}/. The other ticket files (order.md, recipe.md, prep-list/, bill.md) take their shape from the skills that write them. The validator also checks the path against product and code, and the product against config/vocabulary/products.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["product", "code", "type", "title"],
+  "properties": {
+    "product": { "type": "string" },
+    "code": { "type": "string" },
+    "type": { "enum": ["bug", "feature", "refactoring", "hotfix", "tech-debt"] },
+    "title": { "type": "string" }
+  }
+}

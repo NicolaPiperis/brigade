@@ -1,0 +1,4 @@
+# The products the pantry documents, and the projects each one runs on.
+# Example:
+#   shelfwise: { description: "Library management app", projects: [shelfwise] }
+products: {}

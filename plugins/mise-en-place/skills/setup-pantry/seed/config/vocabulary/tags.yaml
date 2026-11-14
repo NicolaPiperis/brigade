@@ -1,0 +1,4 @@
+# The tags an entry may carry, grouped by area.
+# Example:
+#   backend: [spring, jpa, rest-api]
+tags: {}

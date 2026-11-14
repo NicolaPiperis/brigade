@@ -1,0 +1,9 @@
+{
+  "name": "mise-en-place",
+  "version": "0.1.0",
+  "description": "A guided, human-in-the-loop development workflow backed by a personal knowledge base, the pantry: every ticket from the grill to the bill.",
+  "author": {
+    "name": "Nicola Piperis"
+  },
+  "keywords": ["workflow", "knowledge-base", "human-in-the-loop", "kitchen"]
+}

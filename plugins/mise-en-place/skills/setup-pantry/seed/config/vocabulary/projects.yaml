@@ -1,0 +1,4 @@
+# The codebases the pantry knows. A project not listed here does not exist.
+# Example:
+#   shelfwise: { description: "Library management app" }
+projects: {}
