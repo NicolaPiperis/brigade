@@ -68,4 +68,4 @@ Done when the pointer names a folder whose root holds `pantry.yaml`.
 
 ### 5. Done
 
-Tell the user where the pantry is, and that `grill-from-pantry`, `restock`, `inventory` and `bill` now read it. To check the pantry later, they run this skill again and ask it to verify.
+Tell the user where the pantry is, and that the other mise-en-place skills now find it through the pointer. To check the pantry later, they run this skill again and ask it to verify.

@@ -30,7 +30,7 @@ A project also holds `rules.md`, its binding coding rules. A module holds `struc
 
 ### Docs
 
-`overview.md` at product, module and feature level; `topics/{topic}/topic.md` at the leaf.
+`overview.md` at product, module and feature level: what the words of its domain mean, and what the level does. `topics/{topic}/topic.md` at the leaf.
 
 ### Tickets
 
@@ -38,7 +38,6 @@ One folder per ticket:
 
 ```
 {code}/
-├── meta.yaml       product, code, type, title
 ├── order.md        the order: the ticket as it was asked
 ├── recipe.md       the spec, written by recipe
 ├── prep-list/      the tasks, one file each, written by prep-list

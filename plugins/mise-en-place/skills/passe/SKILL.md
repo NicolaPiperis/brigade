@@ -1,0 +1,97 @@
+---
+name: passe
+description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along three axes: Standards (does the code follow the project's coding rules?), Spec (does the code match what the ticket's recipe and tasks asked for?) and Security (does the diff open a risk it does not guard against?). Runs the three reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\", and when fire reviews a task it built."
+---
+
+# Passe
+
+Three-axis review of the diff between `HEAD` and a fixed point the user supplies:
+
+- **Standards**: does the code conform to the project's coding rules?
+- **Spec**: does the code faithfully implement the ticket's recipe and tasks?
+- **Security**: does the diff open a risk the code does not guard against?
+
+All three axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+
+## Process
+
+### 1. Pin the fixed point
+
+Whatever the user said is the fixed point (a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.). If they didn't specify one, ask for it.
+
+Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
+
+Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside the parallel sub-agents.
+
+### 2. Identify the spec source
+
+Look for what the work was supposed to do, in this order:
+
+1. **Called by `fire`**: the task it built, in the ticket's `prep-list/`, and the ticket's `recipe.md`.
+2. **The ticket in the pantry**: its code from the branch name or the commit messages, then its folder under `core/tickets/{pending|served}/{product}/{code}/`: `recipe.md` for what was decided, the `prep-list/` tasks for what each slice had to deliver, `order.md` for the request.
+3. A path the user passed as an argument.
+4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
+
+### 3. Identify the standards sources
+
+The project's coding rules are its `rules.md` in the pantry, `core/technical/{project}/rules.md`, with `{project}` as `config/vocabulary/projects.yaml` names it. On top of it, search the repo for every file that documents how code should be written. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list.
+
+On top of whatever the project documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
+
+- **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
+- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation. Like any standard here, skip anything tooling already enforces.
+
+Each smell reads *what it is* → *how to fix*; match it against the diff:
+
+- **Mysterious Name**: a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design's murky.
+- **Duplicated Code**: the same logic shape appears in more than one hunk or file in the change. → extract the shared shape, call it from both.
+- **Feature Envy**: a method that reaches into another object's data more than its own. → move the method onto the data it envies.
+- **Data Clumps**: the same few fields or params keep travelling together (a type wanting to be born). → bundle them into one type, pass that.
+- **Primitive Obsession**: a primitive or string standing in for a domain concept that deserves its own type. → give the concept its own small type.
+- **Repeated Switches**: the same `switch`/`if`-cascade on the same type recurs across the change. → replace with polymorphism, or one map both sites share.
+- **Shotgun Surgery**: one logical change forces scattered edits across many files in the diff. → gather what changes together into one module.
+- **Divergent Change**: one file or module is edited for several unrelated reasons. → split so each module changes for one reason.
+- **Speculative Generality**: abstraction, parameters, or hooks added for needs the spec doesn't have. → delete it; inline back until a real need shows.
+- **Message Chains**: long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
+- **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
+- **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
+
+### 4. Spawn the sub-agents in parallel
+
+Issue the three sub-agent calls together, in the foreground, and aggregate the reports they return.
+
+**Standards sub-agent prompt** should include:
+
+- The full diff command and commit list.
+- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
+- The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
+
+**Spec sub-agent prompt** should include:
+
+- The diff command and commit list.
+- The paths of the spec: `recipe.md`, the tasks the diff answers to, and `order.md`.
+- The brief: "The acceptance criteria of the tasks are the requirement list: go through them one by one against the diff. Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+
+**Security sub-agent prompt** should include:
+
+- The diff command and commit list.
+- The path of `recipe.md`, whose `## Threat Model` holds the mitigations decided for this ticket.
+- The brief: "Check two things against the diff. (a) Every mitigation the Threat Model decided for this ticket: is it in the code? (b) The OWASP Top 10: report only the risks the changed code is actually exposed to and does not guard against: for each, the category, the hunk quoted, how it is exploited, the fix. Existing code the diff calls counts only where the diff opens a new path to it. When nothing is found, answer 'none'. Under 300 words."
+
+If the spec is missing, skip the Spec sub-agent and note this in the final report; the Security sub-agent then runs on the OWASP check alone.
+
+### 5. Aggregate
+
+Present the three reports under `## Standards`, `## Spec` and `## Security` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the axes are deliberately separate (see _Why separate axes_).
+
+End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
+
+## Why separate axes
+
+A change can pass one axis and fail another:
+
+- Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
+- Code that does exactly what the ticket asked but breaks the project's conventions → **Spec pass, Standards fail.**
+- Code that follows every standard and does what the ticket asked, but leaves an endpoint without an authorization check → **Standards and Spec pass, Security fails.**
+
+Reporting them separately stops one axis from masking the other.

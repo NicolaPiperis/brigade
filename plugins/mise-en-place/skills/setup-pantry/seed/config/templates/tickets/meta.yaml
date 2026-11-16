@@ -1,4 +1,0 @@
-product:            # one, from products.yaml
-code:               # the ticket's own code
-type:               # bug | feature | refactoring | hotfix | tech-debt
-title:
